@@ -1,0 +1,130 @@
+def sim(lmbda, mu, m, L, d, D, F, C, S):
+    return tes(lmbda, L) + tps(lmbda, mu, m) + tds(lmbda, d, D) + tos(lmbda, F, S) + tcs(lmbda, F, C)
+
+def tes(lmbda, L):
+    return (1/L)/(1-(lmbda/L))
+
+# Erlang's C formula (probability than an arriving customer is forced to join the queue (all servers are occupied))
+def earlang(p, m):
+    #p = lmbda / mu
+    #return ((((m*p)^m)/(factorial(m)))*(1/(1-p))) / ((sum([((m*p)^k)/(factorial(k)) for k in [0..m-1] ])) + (((m*p)^m)/(factorial(m))) * (1/(1-p)))
+    return ((p^m) / factorial(m-1)) / ((m-p) * ((sum([((p^k)/factorial(k)) for k in [0..m-1] ])) + ((p^m) / ((factorial(m-1)) * (m-p)))))
+
+# M/M/m queue response time function
+def tps(lmbda, mu, m):
+    p = lmbda/mu
+    #return (1/mu) + (earlang(lmbda, mu, m)/(m*mu-lmbda))
+    return (earlang(p, m)/mu) / (m-p)
+
+# Prova pel gràfic d'evolució de rho
+def tps2(lmbda, mu, m):
+    p = (lmbda/mu)/m
+    return p/1000
+    
+def tds(lmbda, d, D):
+    return 1/(D-(lmbda*d))
+
+def tos(lmbda, F, S):
+    return F/(S-lmbda*F)
+
+def tcs(lmbda, F, C):
+    return F/(C-lmbda*F)
+
+@interact
+def _(
+    lmbda=("$\\lambda$",slider(0,100,1,49)),
+    mu=("$\\mu$",slider(0,100,1,50)),
+    m=("$m$",slider(1,100,1,10)),
+    L=("$L$",slider(1,5000,1,2796)),
+    d=("$d$",slider(0,1,.01,.9)),
+    D=("$D$",slider(0,100,1,50)),
+    F=("$F$",slider(0,500,1,300)),
+    C=("$C$",slider(0,60000,1,47140)),
+    S=("$S$",slider(0,60000,1,50981))):
+    
+    print "Response time:"
+    print sim(lmbda, mu, m, L, d, D, F, C, S)*1000
+    print "T_ES:"
+    print tes(lmbda, L)
+    print "T_PS:"
+    print tps(lmbda, mu, m)
+    print "T_DS:"
+    print tds(lmbda, d, D)
+    print "T_OS:"
+    print tos(lmbda, F, S)
+    print "T_CS:"
+    print tcs(lmbda, F, C)
+    #v = [(sim(x, mu, m, L, d, D, F, C, S)*1000) for x in srange(1,50,1)]
+    #v = [(sim(x, mu, m, L, d, D, F, C, S)*1000) for x in srange(1,50,1)]
+    #v = [(tps(.8, 1, x)*1000) for x in srange(1,10,1)] # Gràfic de la rho decreixent
+    #show(plot(v))
+    #bchart = bar_chart(v,gridlines=True)
+    #bchart.axes_labels([r'$\lambda$', r'$T$'])
+    #bchart.fontsize(12)
+    #show(bchart)
+    #print v
+    
+    
+    
+    #rho en funció del nombre de servers
+    v = [(tps2(.9, 1, x)*1000) for x in srange(1,11,1)] # Gràfic de la rho decreixent
+    bchart = bar_chart(v,gridlines=True)
+    bchart.axes_labels([r'$m$', r'$\rho$'])
+    #bchart.xmin(1)
+    bchart.fontsize(14)
+    #show(bchart)
+    
+    
+    #rho
+    v = [(tps(x, 1, 1)*1000) for x in srange(.1,.9,.1)]
+    bchart = bar_chart(v,gridlines=True)
+    bchart.axes_labels([r'$\rho$', r''])
+    bchart.fontsize(13)
+    #frho(x) = tps(x, 1, 1)*1000
+    #bchart2 = plot(frho, (x, .1, .9), color="blue")
+    #show(bchart)
+    
+    
+    
+    #sage3D_lambda_F
+    #f(x, y) = sim(x, mu, m, L, d, D, y, C, S)*1000
+    #chart3d=plot3d(f, (x, 1, 50), (y, 1, 900), adaptive=True, color=["lightblue", "lightcyan"], opacity=0.8, grad_f=g, max_bend=0.5, max_depth=5, initial_depth=4,mesh=True)
+    #show(chart3d)
+    
+    
+    #sage3D_lambda_S
+    #f(x, y) = sim(x, mu, m, L, d, D, F, C, y)*1000
+    #chart3d2=plot3d(f, (x, 1, 50), (y, 15000, 50000), adaptive=True, color=["lightblue", "lightcyan"], opacity=0.8, grad_f=g, max_bend=0.5, max_depth=5, initial_depth=4,mesh=True)
+    #show(chart3d2)
+    
+    
+    #línies 1
+    f(x) = sim(x, mu, m, L, d, D, F, C, S)*1000
+    bchart = plot(f, (x, 1, 50), color="red", legend_label='Base case',gridlines=True, thickness=1)
+    bchart.axes_labels([r'$\lambda$', r''])
+    bchart.fontsize(14)
+    f2(x) = sim(x, mu*2, m, L, d, D*2, F, C, S)*1000
+    bchart2 = plot(f2, (x, 1, 100), color="blue", legend_label='Double service rate', thickness=3, linestyle="-.")
+    bchart2.axes_labels([r'$\lambda$', r''])
+    bchart2.fontsize(14)
+    f3(x) = sim(x, mu, m, L, d, D, F, C*2, S*2)*1000
+    bchart3 = plot(f3, (x, 1, 50), color="green", legend_label='Double bandwidth', axes_labels=['$\lambda$',''], fontsize=14, thickness=5, linestyle="--")
+    bchart3.axes_labels([r'$\lambda$', r''])
+    bchart3.fontsize(14)
+    show(bchart + bchart2 + bchart3)
+    
+    
+    #línies 2
+    f(x) = sim(x, mu, m, L, d, D, F, C, S)*1000
+    bchart = plot(f, (x, 1, 100), color="red", legend_label='Base case',gridlines=True, thickness=1)
+    bchart.axes_labels([r'$\lambda$', r''])
+    bchart.fontsize(14)
+    f2(x) = sim(x, mu*2, m, L, d, D*2, F, C, S)*1000
+    bchart2 = plot(f2, (x, 1, 100), color="blue", legend_label='Double service rate', thickness=3, linestyle="-.")
+    bchart2.axes_labels([r'$\lambda$', r''])
+    bchart2.fontsize(14)
+    f3(x) = sim(x, mu, m, L, d, D, F, C*2, S*2)*1000
+    bchart3 = plot(f3, (x, 1, 100), color="green", legend_label='Double bandwidth', axes_labels=['$\lambda$',''], fontsize=14, thickness=5, linestyle="--")
+    bchart3.axes_labels([r'$\lambda$', r''])
+    bchart3.fontsize(14)
+    #show(bchart + bchart2 + bchart3)
