@@ -16,7 +16,7 @@ def tps(lmbda, mu, m):
     #return (1/mu) + (earlang(lmbda, mu, m)/(m*mu-lmbda))
     return (earlang(p, m)/mu) / (m-p)
 
-# Prova pel gràfic d'evolució de rho
+# Test for rho evolution chart
 def tps2(lmbda, mu, m):
     p = (lmbda/mu)/m
     return p/1000
@@ -66,8 +66,8 @@ def _(
     
     
     
-    #rho en funció del nombre de servers
-    v = [(tps2(.9, 1, x)*1000) for x in srange(1,11,1)] # Gràfic de la rho decreixent
+    #rho in function of the number of servers
+    v = [(tps2(.9, 1, x)*1000) for x in srange(1,11,1)] # Decreasing rho chart
     bchart = bar_chart(v,gridlines=True)
     bchart.axes_labels([r'$m$', r'$\rho$'])
     #bchart.xmin(1)
@@ -98,7 +98,7 @@ def _(
     #show(chart3d2)
     
     
-    #línies 1
+    # Lines 1
     f(x) = sim(x, mu, m, L, d, D, F, C, S)*1000
     bchart = plot(f, (x, 1, 50), color="red", legend_label='Base case',gridlines=True, thickness=1)
     bchart.axes_labels([r'$\lambda$', r''])
@@ -114,7 +114,7 @@ def _(
     show(bchart + bchart2 + bchart3)
     
     
-    #línies 2
+    # Lines 2
     f(x) = sim(x, mu, m, L, d, D, F, C, S)*1000
     bchart = plot(f, (x, 1, 100), color="red", legend_label='Base case',gridlines=True, thickness=1)
     bchart.axes_labels([r'$\lambda$', r''])
